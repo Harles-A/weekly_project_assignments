@@ -39,11 +39,12 @@ class liner:
         
     def listen(self):
         if sw2() == 0:
-            print(2)
-            self.move(1)
+            if self.y < oled_height:
+                self.move(1)
             
         elif sw0() == 0:
-            self.move(-1)
+            if self.y > 0:
+                self.move(-1)
             
         elif sw1() == 0:
             oled.fill(0)

@@ -43,7 +43,7 @@ while len(peaks) < 4:
 
     # Check for a positive peak in the current window of three samples.
     # A positive peak is identified when the current sample is greater than both its neighboring samples.
-    if previous_sample < current_sample > next_sample:
+    if previous_sample <= current_sample > next_sample:
         # If a peak is detected, verify that enough samples have passed since the last detected peak.
         # This helps avoid detecting multiple peaks that are too close together due to noise.
         if (sample_index - 1 - last_peak_index) >= min_interval:
@@ -79,9 +79,6 @@ if intervals_samples:
     # The frequency (in Hertz) is determined by dividing the sample rate by the average interval.
     # This works because the average interval represents the period (in samples) of one full cycle.
     frequency = sample_rate / avg_interval
-
-# Print the indices where peaks were detected.
-# print("Detected peak indices:", peaks) #Disabled as not needed for the task.
 
 # Print the intervals between peaks in number of samples.
 print("Peak-to-peak intervals (samples):", intervals_samples)

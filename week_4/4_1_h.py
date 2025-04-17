@@ -10,14 +10,14 @@ MIN_INTERVAL = 60
 OFFSET = 10
 NUM_BPM_VALUES = 20  
 
-fifo = Filefifo(100, name="capture_250Hz_01.txt")
+fifo = Filefifo(100, name="capture_250Hz_03.txt")
 
 # We maintain a moving window of a fixed number of samples to calculate a dynamic baseline of the signal.
 baseline_length = 250
 baseline_buffer = []  # This list will store the most recent 250 samples.
 
 prev_sample = None         # To store the previous sample for slope calculation.
-last_peak_index = -MIN_INTERVAL  # The sample index where the last valid peak was detected.
+last_peak_index = None     # The sample index where the last valid peak was detected (None means no peak yet).
 bpm_values = []            # List to store calculated heart rate values (in BPM).
 current_index = 0          # Counter for the total number of samples processed.
 
@@ -40,6 +40,7 @@ while len(bpm_values) < NUM_BPM_VALUES:
     else:
         baseline_buffer.pop(0)     # Remove the oldest sample.
         baseline_buffer.append(sample)  # Add the new sample.
+
     # Compute the baseline as the arithmetic mean of the buffer.
     baseline = sum(baseline_buffer) / len(baseline_buffer)
     # Set a dynamic threshold that is OFFSET units above the baseline.
@@ -65,20 +66,27 @@ while len(bpm_values) < NUM_BPM_VALUES:
         # If we were in a rising phase, but now diff is ≤0, indicating a possible turning point (peak).
         # Check if the candidate (the highest point during the rising phase) qualifies as a valid peak.
         if peak_candidate is not None and peak_candidate > threshold:
-            # Ensure that enough samples have passed since the last detected peak:
-            if (candidate_index - last_peak_index) >= MIN_INTERVAL:
+            if last_peak_index is None:
+                # First valid peak detected, just store the index without calculating BPM
+                last_peak_index = candidate_index
+                #debug info
+#                 print("First peak detected at index:", candidate_index,
+#                       "Baseline:", baseline,
+#                       "Threshold:", threshold)
+            elif (candidate_index - last_peak_index) >= MIN_INTERVAL:
                 interval = candidate_index - last_peak_index  # Interval in samples between peaks.
                 # Calculate BPM
                 bpm = int(60 * SAMPLE_RATE / interval)
                 bpm_values.append(bpm)  # Store the calculated BPM.
                 # debug information:
-                print("Peak detected at index:", candidate_index,
-                      "Interval (samples):", interval,
-                      "Calculated BPM:", bpm,
-                      "Baseline:", baseline,
-                      "Threshold:", threshold)
+#                 print("Peak detected at index:", candidate_index,
+#                       "Interval (samples):", interval,
+#                       "Calculated BPM:", bpm,
+#                       "Baseline:", baseline,
+#                       "Threshold:", threshold)
                 # Update last_peak_index so that this peak won't be counted again.
                 last_peak_index = candidate_index
+
         # Reset the rising phase state once the peak is processed.
         rising = False
         peak_candidate = None

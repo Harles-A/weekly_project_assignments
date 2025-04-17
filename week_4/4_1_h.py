@@ -6,11 +6,10 @@ SAMPLE_RATE = 250
 # that means a minimum gap of 60/250 = 0.24 seconds between beats, allowing up to 250 BPM.
 MIN_INTERVAL = 60
 # OFFSET is the number of units above the calculated baseline that a peak must exceed
-# to be considered a true heartbeat. (You may need to adjust this based on the signal amplitude.)
 OFFSET = 10
 NUM_BPM_VALUES = 20  
 
-fifo = Filefifo(100, name="capture_250Hz_03.txt")
+fifo = Filefifo(100, name="capture_250Hz_01.txt")
 
 # We maintain a moving window of a fixed number of samples to calculate a dynamic baseline of the signal.
 baseline_length = 250
